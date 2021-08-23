@@ -1,0 +1,104 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'io.swagger:swagger-codegen:2.4.16'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+    withJavadocJar()
+    withSourcesJar()
+}
+
+import io.swagger.codegen.config.CodegenConfigurator
+import io.swagger.codegen.DefaultGenerator
+
+// wget https://api.bybit.com/doc/swagger.txt -O api-spec.json
+def swaggerInput = 'api-spec.json'
+def swaggerOutputDir = file('build/swagger')
+task generateApi {
+    inputs.file(swaggerInput)
+    outputs.dir(swaggerOutputDir)
+    doLast {
+        def config = new CodegenConfigurator()
+        config.setInputSpec(swaggerInput)
+        config.setOutputDir(swaggerOutputDir.path)
+        config.setLang('java')
+        config.setAdditionalProperties([
+                'invokerPackage'         : 'com.bybit.client',
+                'modelPackage'           : 'com.bybit.client.model',
+                'apiPackage'             : 'com.bybit.client.api',
+                'groupId'                : 'com.bybit',
+                'artifactId'             : 'bybit-api-client',
+                'dateLibrary'            : 'java8',
+                'hideGenerationTimestamp': true
+        ])
+        new DefaultGenerator().opts(config.toClientOptInput()).generate()
+    }
+}
+
+clean.doFirst {
+    delete(swaggerOutputDir)
+}
+
+configurations {
+    swagger
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', "${project.buildDir.path}/swagger/src/main/java"]
+        }
+    }
+}
+
+compileJava.dependsOn generateApi
+
+version = '1.0.0-SNAPSHOT'
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+publishing {
+	repositories {
+		maven {
+			url = "$buildDir/repo"
+		}
+	}
+	publications {
+		maven(MavenPublication) {
+			groupId = "com.bybit"
+			artifactId = "bytibt-api-client"
+			version = "1.0"
+			from components.java
+		}
+	}
+}
+
+dependencies {
+    implementation 'io.swagger:swagger-annotations:1.6.1'
+    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+    implementation 'com.squareup.okhttp:logging-interceptor:2.7.5'
+    implementation 'com.google.code.gson:gson:2.8.1'
+    implementation 'io.gsonfire:gson-fire:1.8.0'
+}
