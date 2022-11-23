@@ -4,7 +4,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'io.swagger:swagger-codegen:2.4.16'
+        classpath 'io.swagger:swagger-codegen:2.4.29'
     }
 }
 
@@ -96,9 +96,9 @@ publishing {
 }
 
 dependencies {
-    implementation 'io.swagger:swagger-annotations:1.6.1'
+    implementation 'io.swagger:swagger-annotations:1.6.8'
     implementation 'com.squareup.okhttp:okhttp:2.7.5'
     implementation 'com.squareup.okhttp:logging-interceptor:2.7.5'
-    implementation 'com.google.code.gson:gson:2.8.1'
-    implementation 'io.gsonfire:gson-fire:1.8.0'
+    implementation 'com.google.code.gson:gson:2.10'
+    implementation 'io.gsonfire:gson-fire:1.8.5'
 }
